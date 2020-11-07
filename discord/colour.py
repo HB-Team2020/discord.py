@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2016 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -24,35 +24,44 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import colorsys
+
 class Colour:
     """Represents a Discord role colour. This class is similar
-    to an (red, green, blue) tuple.
+    to a (red, green, blue) :class:`tuple`.
 
     There is an alias for this called Color.
 
-    Supported operations:
+    .. container:: operations
 
-    +-----------+----------------------------------------+
-    | Operation |              Description               |
-    +===========+========================================+
-    | x == y    | Checks if two colours are equal.       |
-    +-----------+----------------------------------------+
-    | x != y    | Checks if two colours are not equal.   |
-    +-----------+----------------------------------------+
-    | hash(x)   | Return the colour's hash.              |
-    +-----------+----------------------------------------+
-    | str(x)    | Returns the hex format for the colour. |
-    +-----------+----------------------------------------+
+        .. describe:: x == y
+
+             Checks if two colours are equal.
+
+        .. describe:: x != y
+
+             Checks if two colours are not equal.
+
+        .. describe:: hash(x)
+
+             Return the colour's hash.
+
+        .. describe:: str(x)
+
+             Returns the hex format for the colour.
 
     Attributes
     ------------
-    value : int
+    value: :class:`int`
         The raw integer colour value.
     """
 
-    __slots__ = [ 'value' ]
+    __slots__ = ('value',)
 
     def __init__(self, value):
+        if not isinstance(value, int):
+            raise TypeError('Expected int parameter, received %s instead.' % value.__class__.__name__)
+
         self.value = value
 
     def _get_byte(self, byte):
@@ -67,31 +76,45 @@ class Colour:
     def __str__(self):
         return '#{:0>6x}'.format(self.value)
 
+    def __repr__(self):
+        return '<Colour value=%s>' % self.value
+
     def __hash__(self):
         return hash(self.value)
 
     @property
     def r(self):
-        """Returns the red component of the colour."""
+        """:class:`int`: Returns the red component of the colour."""
         return self._get_byte(2)
 
     @property
     def g(self):
-        """Returns the green component of the colour."""
+        """:class:`int`: Returns the green component of the colour."""
         return self._get_byte(1)
 
     @property
     def b(self):
-        """Returns the blue component of the colour."""
+        """:class:`int`: Returns the blue component of the colour."""
         return self._get_byte(0)
 
-    def to_tuple(self):
-        """Returns an (r, g, b) tuple representing the colour."""
+    def to_rgb(self):
+        """Tuple[:class:`int`, :class:`int`, :class:`int`]: Returns an (r, g, b) tuple representing the colour."""
         return (self.r, self.g, self.b)
 
     @classmethod
+    def from_rgb(cls, r, g, b):
+        """Constructs a :class:`Colour` from an RGB tuple."""
+        return cls((r << 16) + (g << 8) + b)
+
+    @classmethod
+    def from_hsv(cls, h, s, v):
+        """Constructs a :class:`Colour` from an HSV tuple."""
+        rgb = colorsys.hsv_to_rgb(h, s, v)
+        return cls.from_rgb(*(int(x * 255) for x in rgb))
+
+    @classmethod
     def default(cls):
-        """A factory method that returns a :class:`Colour` with a value of 0."""
+        """A factory method that returns a :class:`Colour` with a value of ``0``."""
         return cls(0)
 
     @classmethod
@@ -179,20 +202,46 @@ class Colour:
         """A factory method that returns a :class:`Colour` with a value of ``0x95a5a6``."""
         return cls(0x95a5a6)
 
+    lighter_gray = lighter_grey
+
     @classmethod
     def dark_grey(cls):
         """A factory method that returns a :class:`Colour` with a value of ``0x607d8b``."""
         return cls(0x607d8b)
+
+    dark_gray = dark_grey
 
     @classmethod
     def light_grey(cls):
         """A factory method that returns a :class:`Colour` with a value of ``0x979c9f``."""
         return cls(0x979c9f)
 
+    light_gray = light_grey
+
     @classmethod
     def darker_grey(cls):
         """A factory method that returns a :class:`Colour` with a value of ``0x546e7a``."""
         return cls(0x546e7a)
 
+    darker_gray = darker_grey
+
+    @classmethod
+    def blurple(cls):
+        """A factory method that returns a :class:`Colour` with a value of ``0x7289da``."""
+        return cls(0x7289da)
+
+    @classmethod
+    def greyple(cls):
+        """A factory method that returns a :class:`Colour` with a value of ``0x99aab5``."""
+        return cls(0x99aab5)
+
+    @classmethod
+    def dark_theme(cls):
+        """A factory method that returns a :class:`Colour` with a value of ``0x36393F``.
+        This will appear transparent on Discord's dark theme.
+        
+        .. versionadded:: 1.5
+        """
+        return cls(0x36393F)
 
 Color = Colour
